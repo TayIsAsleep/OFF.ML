@@ -259,4 +259,4 @@ if __name__ == "__main__":
         new_key = emoji_to_key(emoji_thing)
         return str(f"<pre>{emoji_thing}</pre><pre>{','.join(str(x) for x in new_key)}</pre>")
 
-    app.run(use_reloader=False)
+    app.run(host="0.0.0.0",use_reloader=False)
