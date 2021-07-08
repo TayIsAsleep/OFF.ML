@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>📴.ml</title>
+        <style>
+            *{
+                margin: 0;
+                padding: 0;
+            }
+            .main-container{
+                width: 100vw;
+                height: 100vh;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #results{
+                position: relative;
+            }
+            #results > a{
+                display: block;
+            }
+
+            .error-message{
+                position: absolute;
+
+                top: 0px;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <div class="main-container">
+
+            <div class="error-message" style="display: none;">
+                <p class="error-message-text"></p>
+            </div>
+
+            <div class="main-box">
+
+                <div class="main-title">
+                    <h1>Welcome to 📴</h1>
+                    <h3>boring placeholder text here</h3>
+                </div>
+
+                <div class="main-form">
+                    <form id="main-form">
+                        <p>
+                            Enter the long url here: <input name="long_url" placeholder="Long URL">
+                            <br>
+                            Enter an optional ID here <input name="key" placeholder="Custom key" value="">
+                            <br>
+                            Shorten it! <input type="submit">
+                        </p>
+                    </form>
+                </div>
+
+                <div class="main-results">
+                    <div id="results"></div>
+                </div>
+                
+            </div>
+
+        </div>
+        
+        <script>
+            // URL PARAM LOADER
+            const url_params = new URLSearchParams(window.location.search);
+            
+            const param_showError = url_params.get("showError");
+            if (param_showError != null && param_showError > 0){
+                let error_message = "";
+                
+                if (param_showError == 1){
+                    error_message = "Wrong/Missing URL!"
+                }
+
+                document.querySelector(".error-message").style.display = ""
+                document.querySelector(".error-message-text").innerHTML = error_message;
+            }
+
+            window.history.pushState({},'',window.location.pathname)
+            // URL PARAM LOADER END
+
+            document.getElementById("main-form").onsubmit = async(e) => {
+                e.preventDefault();
+                
+                // Get the values from the form
+                let long_url = document.querySelector('#main-form input[name=long_url]').value
+                let key = document.querySelector('#main-form input[name=key]').value
+                
+                if (long_url == ""){return;}
+
+                // If the key is nothing it grabs the next best key instead
+                if (key == ""){
+                    await fetch("/API/fetch_empty_key")
+                    .then(response => response.text())
+                    .then(data => key = data);
+                }
+
+                // Send request to server to claim the key and then display it
+                await fetch(`/API/claim_key?key=${encodeURIComponent(key)}&value=${encodeURIComponent(long_url)}`)
+                .then(response => response.json())
+                .then(function(data){
+                    console.log(data)
+
+                    if (data.code == 0){
+                        let temp = document.getElementById("results")
+
+                        let link = document.createElement("a")
+                        link.text = window.location.origin + `/${key}`
+                        link.href = link.text
+                        link.target = "_blank"
+
+                        temp.appendChild(link)
+                    }
+                });
+            };
+        </script>
+    </body>
+</html>
